@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ktdsuniversity.edu.members.dao.MembersDao">
+  <select id="getMembersCount" resultType="_long">
+    SELECT COUNT(EMAIL)
+      FROM MEMBERS
+  </select>
+  
+  <select id="getAllMembers" resultType="com.ktdsuniversity.edu.members.vo.response.MemberListVO">
+    SELECT EMAIL
+         , NAME
+         , NICKNAME
+         , PASSWORD
+         , TO_CHAR(REGIST_DATE, 'YYYY-MM-DD HH24:MI:SS') AS REGIST_DATE
+         , TO_CHAR(MODIFY_DATE, 'YYYY-MM-DD HH24:MI:SS') AS MODIFY_DATE
+         , TO_CHAR(LATEST_LOGIN_SUCCESS_DATE, 'YYYY-MM-DD HH24:MI:SS') AS LATEST_LOGIN_SUCCESS_DATE
+         , TO_CHAR(LATEST_LOGIN_FAIL_DATE, 'YYYY-MM-DD HH24:MI:SS') AS LATEST_LOGIN_FAIL_DATE
+         , TO_CHAR(LATEST_LOGOUT_DATE, 'YYYY-MM-DD HH24:MI:SS') AS LATEST_LOGOUT_DATE
+         , LOGIN_FAIL_COUNT
+         , LOGIN_BLOCK_YN
+         , TO_CHAR(LOGIN_BLOCK_DATE, 'YYYY-MM-DD HH24:MI:SS') AS LOGIN_BLOCK_DATE
+         , LOGIN_YN
+         , SALT
+         , DEL_YN
+      FROM MEMBERS
+  </select>
+</mapper>

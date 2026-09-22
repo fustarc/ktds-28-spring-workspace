@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+    namespace?
+    Mybatis 가 실행해야하는 쿼리의 클래스의 경로를 작성.
+    해당 클래스의 메소드와 mapper 에 작성하는 쿼리가 매칭되어서 실행된다.
+    Mybatis 기 생성하는 익명클래스의 원본이 된다.
+ -->
+<mapper namespace="com.ktdsuniversity.edu.articles.dao.ArticlesDao">
+
+    <!-- ArticlesDao 인터페이스에 있는 추상 메소드들을 구현 -->
+
+    <!--  
+    long selectArticlesCount();
+    <select id="" id는 메소드의 이름
+            parameterType="" 메소드의 파라미터 타입, 없으면 생략
+            resultType=""> 메소드의 반환 타입
+   </select> 
+   -->
+    
+    <select id="selectArticlesCount"
+            resultType="_long">
+        SELECT COUNT(ID)
+          FROM ARTICLES
+         WHERE DEL_YN = 'N'    
+    </select>
+    
+    <!-- List 일 때는 반환타입을 제네릭으로 작성한다. -->
+    <!-- List<ArticlesVO> selectAllArticles(); -->
+    <select id="selectAllArticles"
+            resultType="com.ktdsuniversity.edu.articles.vo.response.ArticlesVO">
+        SELECT ID
+             , SUBJECT
+             , CONTENT
+             , EMAIL
+             , VIEW_CNT
+             , RECOMMEND_CNT
+             , DEL_YN
+             , TO_CHAR(CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+             , TO_CHAR(MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+             , FILE_SET_ID
+          FROM ARTICLES
+         WHERE DEL_YN = 'N'     
+    </select>
+    
+    <!-- resultType은 select 태그에만 작성 가능 -->
+    <insert id="insertNewArticle" 
+            parameterType="com.ktdsuniversity.edu.articles.vo.request.RegistArticleVO">
+            
+        <selectKey order="BEFORE" keyProperty="id" resultType="string">
+            SELECT ('AR-'|| TO_CHAR(SYSDATE, 'YYYYMMDD-') || LPAD(SEQ_ARTICLES_PK.NEXTVAL, 6, '0'))
+              FROM DUAL
+        </selectKey>    
+            
+        INSERT INTO ARTICLES 
+         (ID
+        , SUBJECT
+        , CONTENT
+        , EMAIL
+        , CRT_DT
+        , FILE_SET_ID)
+        VALUES
+         (#{id}
+        , #{subject}
+        , #{content}
+        , #{email}
+        , SYSDATE
+        , NULL)
+    </insert>
+    
+    <select id="selectArticleByArticleId"
+            parameterType="string"
+            resultType="com.ktdsuniversity.edu.articles.vo.response.ArticlesVO">
+        SELECT ID
+             , SUBJECT
+             , CONTENT
+             , EMAIL
+             , VIEW_CNT
+             , RECOMMEND_CNT
+             , DEL_YN
+             , TO_CHAR(CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+             , TO_CHAR(MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+             , FILE_SET_ID
+          FROM ARTICLES
+         WHERE ID = #{_parameter}
+           AND DEL_YN = 'N'    
+    </select>
+    
+    
+    <update id="updateArticle">
+        UPDATE ARTICLES
+           SET SUBJECT = #{modifyArticleVO.subject}
+             , CONTENT = #{modifyArticleVO.content}
+             , MDFY_DT = SYSDATE
+         WHERE ID = #{articleId}
+           AND EMAIL = #{modifyArticleVO.email}    
+           AND DEL_YN = 'N'        
+    </update>
+    
+    <update id="deleteArticle"
+            parameterType="string">
+        UPDATE ARTICLES
+           SET DEL_YN = 'Y'
+             , MDFY_DT = SYSDATE
+         WHERE ID = #{_parameter}
+           AND DEL_YN = 'N'            
+    </update>
+    
+    <update id="updateIncreaseViewCount"
+            parameterType="string">
+       UPDATE ARTICLES
+          SET VIEW_CNT = VIEW_CNT + 1
+        WHERE ID = #{_parameter}
+          AND DEL_YN = 'N'
+    </update>
+    
+    <update id="updateIncreaseRecommnedCount"
+            parameterType="string">
+       UPDATE ARTICLES
+          SET RECOMMEND_CNT = RECOMMEND_CNT + 1
+        WHERE ID = #{_parameter}
+          AND DEL_YN = 'N'
+    </update>
+</mapper>
