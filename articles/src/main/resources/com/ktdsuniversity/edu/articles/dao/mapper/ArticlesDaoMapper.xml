@@ -204,5 +204,4 @@
           AND DEL_YN = 'N'
     </update>
     
-    
 </mapper>

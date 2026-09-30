@@ -41,7 +41,7 @@
          , 'N' )
     </insert>
     
-    <update id="deleteFilesByArticleId"
+    <update id="deleteFilesByFileSetId"
             parameterType="string">
         UPDATE FILES
            SET DEL_YN = 'Y'
@@ -49,4 +49,43 @@
                                 FROM ARTICLES 
                                WHERE ID = #{_parameter})
     </update>
+    
+    <select id="selectFilesByFileSetId"
+            parameterType="string"
+            resultType="com.ktdsuniversity.edu.files.vo.response.FilesVO">
+        SELECT ID
+             , FILE_SET_ID
+             , DISPLAY_FILE_NAME
+             , OBFUSCATE_FILE_NAME
+             , FILE_SIZE
+             , DOWNLOAD_COUNT
+             , DEL_YN
+          FROM FILES
+         WHERE FILE_SET_ID = #{_parameter}
+           AND DEL_YN = 'N'       
+    </select>
+    
+    <select id="selectAttachFile"
+            resultType="com.ktdsuniversity.edu.files.vo.response.FilesVO">
+        SELECT ID
+             , FILE_SET_ID
+             , DISPLAY_FILE_NAME
+             , OBFUSCATE_FILE_NAME
+             , FILE_SIZE
+             , DOWNLOAD_COUNT
+             , DEL_YN
+         FROM FILES
+        WHERE FILE_SET_ID = #{fileSetId}
+          AND ID = #{fileId}
+          AND DEL_YN = 'N'
+    </select>
+            
+    <update id="updateIncreaseDownloadCount">
+        UPDATE FILES
+           SET DOWNLOAD_COUNT = DOWNLOAD_COUNT + 1
+         WHERE FILE_SET_ID = #{fileSetId}
+           AND ID = #{fileId}
+           AND DEL_YN = 'N'
+    </update>
+    
 </mapper>
