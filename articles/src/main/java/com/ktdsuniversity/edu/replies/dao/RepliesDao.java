@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.ktdsuniversity.edu.replies.vo.request.ModifyRepliesVO;
 import com.ktdsuniversity.edu.replies.vo.request.RegistRepliesVO;
 import com.ktdsuniversity.edu.replies.vo.response.RepliesVO;
 
@@ -18,7 +19,9 @@ public interface RepliesDao {
 	int insertNewReplies(@Param("articleId") String articleId, 
 						 @Param("registRepliesVO") RegistRepliesVO registRepliesVO);
 	
-	RepliesVO selectRepliesByReplieId(String replieId);
+	RepliesVO selectRepliesByReplieId(String articleId);
 
+	int updateReplies(@Param("articleId") String articleId, 
+					  @Param("modifyRepliesVO") ModifyRepliesVO modifyRepliesVO);
 	
 }

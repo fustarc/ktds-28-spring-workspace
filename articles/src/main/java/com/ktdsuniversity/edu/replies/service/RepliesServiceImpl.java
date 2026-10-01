@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.ktdsuniversity.edu.files.components.MultipartHandler;
 import com.ktdsuniversity.edu.replies.dao.RepliesDao;
+import com.ktdsuniversity.edu.replies.vo.request.ModifyRepliesVO;
 import com.ktdsuniversity.edu.replies.vo.request.RegistRepliesVO;
 import com.ktdsuniversity.edu.replies.vo.response.RepliesListVO;
 import com.ktdsuniversity.edu.replies.vo.response.RepliesVO;
@@ -49,6 +50,26 @@ public class RepliesServiceImpl implements RepliesService{
 		}
 		
 		throw new IllegalArgumentException("입력값이 유효하지 않습니다.");
+	}
+
+	@Override
+	public RepliesVO updateReplies(String articleId, ModifyRepliesVO modifyRepliesVO) {
+		
+		RepliesVO reply = this.repliesDao.selectRepliesByReplieId(articleId);
+		
+		String fileSetId = this.multipartHandler.storeFiles(
+												modifyRepliesVO.getFile(), 
+												modifyRepliesVO.getEmail(), 
+												reply.getFileSetId());
+		modifyRepliesVO.setFileSetId(fileSetId);
+		
+		int updatedRows = this.repliesDao.updateReplies(articleId, modifyRepliesVO);
+		
+		if (updatedRows == 0) {
+			throw new IllegalArgumentException("존재하지 않는 게시글입니다.");
+		}
+		
+		return this.repliesDao.selectRepliesByReplieId(articleId);
 	}
 
 }

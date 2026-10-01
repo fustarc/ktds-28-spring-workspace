@@ -1,15 +1,13 @@
 package com.ktdsuniversity.edu.articles.web;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.ktdsuniversity.edu.articles.service.ArticlesService;
@@ -19,6 +17,8 @@ import com.ktdsuniversity.edu.articles.vo.response.ArticleListVO;
 import com.ktdsuniversity.edu.articles.vo.response.ArticlesVO;
 import com.ktdsuniversity.edu.commons.util.ApiResponse;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -64,6 +64,7 @@ public class ArticlesController {
 	@GetMapping("/articles/{articleId}")
 	@ResponseBody
 	public ApiResponse<ArticlesVO> getOneArticle(
+			@Size(min=18, max=20, message="잘못된 값입니다.") 
 			@PathVariable String articleId) {
 		try {
 		ArticlesVO result = this.articlesService.readOneArticle(articleId);
@@ -91,24 +92,41 @@ public class ArticlesController {
 	public ApiResponse<ArticlesVO> makeNewArticle(
 			// Command Object
 			// 클라이언트가 컨트롤러로 전송한 파라미터(폼 파라미터, 쿼리스트링 파라미터[url ?k=v])를 자동으로 받아오는 역할
-			RegistArticleVO registArticleVO
+			@Valid @ModelAttribute RegistArticleVO registArticleVO,
+			BindingResult validationResult
 			// 클라이언트가 컨트롤러로 전송한 파라미터(폼 파라미터, 쿼리스트링 파라미터)를 하나씩 받아오는 역할 
 			// ,@RequestParam List<MultipartFile> file
-			) {
+	) {
 		
-		try {
-			ArticlesVO result = this.articlesService.createNewArticle(registArticleVO);
-			return ApiResponse.CREATE(result);
-		} catch (IllegalArgumentException iae){
-			return ApiResponse.FORBIDDEN(iae.getMessage());
-		}
+		System.out.println(validationResult);
+		
+			// Validation 검사를 통화하지 못했다면
+			if (validationResult.hasErrors()) {
+				return ApiResponse.BAD_REQUEST(validationResult.getFieldErrors());
+			}
+		
+			try {
+				ArticlesVO result = this.articlesService.createNewArticle(registArticleVO);
+				return ApiResponse.CREATE(result);
+			} catch (IllegalArgumentException iae){
+				return ApiResponse.FORBIDDEN(iae.getMessage());
+			}
 	}
 	
 	@PutMapping("/articles/{articleId}")
 	@ResponseBody
 	public ApiResponse<ArticlesVO> updateArticle(
+			@Size(min=18, max=20, message="잘못된 값입니다.") 
 			@PathVariable String articleId, 
-			ModifyArticleVO modifyArticleVO ) {
+			@Valid @ModelAttribute ModifyArticleVO modifyArticleVO
+			, BindingResult validationResult ) {
+		
+		System.out.println(validationResult);
+		
+		if (validationResult.hasErrors()) {
+			return ApiResponse.BAD_REQUEST(validationResult.getFieldErrors());
+		}
+		
 		try {
 			ArticlesVO result = this.articlesService.updateArticle(articleId, modifyArticleVO);
 			return ApiResponse.OK(result);
@@ -120,6 +138,7 @@ public class ArticlesController {
 	@PutMapping("/articles/recommend/{articleId}")
 	@ResponseBody
 	public ApiResponse<Long> recommendOneArticle(
+			@Size(min=18, max=20, message="잘못된 값입니다.") 
 			@PathVariable String articleId) {
 		try {
 			long recommendResult = this.articlesService.recommendOneArticle(articleId);
@@ -132,6 +151,7 @@ public class ArticlesController {
 	@DeleteMapping("/articles/{articleId}")
 	@ResponseBody
 	public ApiResponse<String> deleteArticle(
+			@Size(min=18, max=20, message="잘못된 값입니다.") 
 			@PathVariable String articleId) {
 		try {
 			String deleteResult = this.articlesService.deleteArticle(articleId);

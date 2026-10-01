@@ -4,6 +4,9 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 /**
@@ -14,8 +17,12 @@ import lombok.Data;
 public class RegistArticleVO {
 
 	private String id;
+	@NotBlank(message="제목을 입력해주세요.")
+	@Size(min = 2, message = "제목은 두 글자 이상 입력하세요.")
 	private String subject;
 	private String content;
+	@NotBlank(message="이메일을 입력해주세요.")
+	@Email(message="올바른 이메일을 입력해주세요.")
 	private String email;
 	private List<MultipartFile> file;
 	private String fileSetId;
