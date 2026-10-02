@@ -11,8 +11,30 @@
          WHERE DEL_YN = 'N'
     </select>
     
+    <resultMap type="com.ktdsuniversity.edu.replies.vo.response.RepliesVO" 
+               id="RepliesVOMap"
+               autoMapping="true">
+        <id column="ID" property="id" />
+        <association property="fileSet"
+                     javaType="com.ktdsuniversity.edu.files.vo.response.FileSetVO"
+                     autoMapping="true">
+            <id column="FILE_SET_ID" property="id" />
+            <result column="FILE_UPLOADER" property="email" />
+            <result column="FILE_UPLOAD_DATE" property="crtDt" />
+            <result column="FILE_MODIFY_DATE" property="mdfyDt" />
+            <collection property="files"
+                        ofType="com.ktdsuniversity.edu.files.vo.response.FilesVO"
+                        javaType="list"
+                        autoMapping="true">
+                <id column="FILE_ID" property="id" />
+                <result column="FILE_DEL_YN" property="delYn" />
+            </collection>
+        </association>
+    </resultMap>
+    
     <select id="selectAllReplies"
-            parameterType="com.ktdsuniversity.edu.replies.vo.response.RepliesVO">
+            parameterType="string"
+            resultMap="RepliesVOMap">
         SELECT R.ID
              , R.ARTICLE_ID
              , R.EMAIL
@@ -22,50 +44,132 @@
              , TO_CHAR(R.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
              , TO_CHAR(R.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
              , R.FILE_SET_ID
+             , F.ID AS FILE_SET_ID
+             , F.EMAIL AS FILE_UPLOADER
+             , F.CRT_DT AS FILE_UPLOAD_DATE
+             , F.MDFY_DT AS FILE_MODIFY_DATE
+             , F.FILE_ID
+             , F.DISPLAY_FILE_NAME
+             , F.OBFUSCATE_FILE_NAME
+             , F.FILE_SIZE
+             , F.DOWNLOAD_COUNT
+             , F.DEL_YN AS FILE_DEL_YN
           FROM REPLIES R
-         INNER JOIN ARTICLES A
-            ON R.ARTICLE_ID = A.ID 
+          LEFT OUTER JOIN (SELECT FS.ID
+                                , FS.EMAIL
+                                , TO_CHAR(FS.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+                                , TO_CHAR(FS.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+                                , F.ID AS FILE_ID
+                                , F.DISPLAY_FILE_NAME
+                                , F.OBFUSCATE_FILE_NAME
+                                , F.FILE_SIZE
+                                , F.DOWNLOAD_COUNT
+                                , F.DEL_YN
+                             FROM FILE_SET FS
+                            INNER JOIN FILES F
+                               ON FS.ID = F.FILE_SET_ID
+                            WHERE F.DEL_YN = 'N') F
+            ON R.FILE_SET_ID = F.ID
          WHERE R.DEL_YN = 'N'
+           AND R.ARTICLE_ID = #{_parameter}
+         ORDER BY R.ID DESC
     </select>
     
-    <select id="selectRepliesByReplieId"
-            parameterType="string"
-            resultType="com.ktdsuniversity.edu.replies.vo.response.RepliesVO">
-	    SELECT R.ID
-	         , R.ARTICLE_ID
-	         , R.EMAIL
-	         , R.CONTENT
-	         , R.RECOMMEND_CNT
-	         , R.DEL_YN
-	         , TO_CHAR(R.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
-	         , TO_CHAR(R.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
-	         , R.FILE_SET_ID
-	      FROM REPLIES R
-	     WHERE R.ID = #{replieId}
-	       AND R.DEL_YN = 'N'
+    <select id="selectReplyByReplyId" 
+            resultMap="RepliesVOMap">
+        SELECT R.ID
+             , R.ARTICLE_ID
+             , R.EMAIL
+             , R.CONTENT
+             , R.RECOMMEND_CNT
+             , R.DEL_YN
+             , TO_CHAR(R.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+             , TO_CHAR(R.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+             , R.FILE_SET_ID
+             , F.ID AS FILE_SET_ID
+             , F.EMAIL AS FILE_UPLOADER
+             , F.CRT_DT AS FILE_UPLOAD_DATE
+             , F.MDFY_DT AS FILE_MODIFY_DATE
+             , F.FILE_ID
+             , F.DISPLAY_FILE_NAME
+             , F.OBFUSCATE_FILE_NAME
+             , F.FILE_SIZE
+             , F.DOWNLOAD_COUNT
+             , F.DEL_YN AS FILE_DEL_YN
+          FROM REPLIES R
+          LEFT OUTER JOIN (SELECT FS.ID
+                                , FS.EMAIL
+                                , TO_CHAR(FS.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+                                , TO_CHAR(FS.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+                                , F.ID AS FILE_ID
+                                , F.DISPLAY_FILE_NAME
+                                , F.OBFUSCATE_FILE_NAME
+                                , F.FILE_SIZE
+                                , F.DOWNLOAD_COUNT
+                                , F.DEL_YN
+                             FROM FILE_SET FS
+                            INNER JOIN FILES F
+                               ON FS.ID = F.FILE_SET_ID
+                            WHERE F.DEL_YN = 'N') F
+            ON R.FILE_SET_ID = F.ID
+         WHERE R.DEL_YN = 'N'
+           AND R.ID = #{replyId}
+           AND R.ARTICLE_ID = #{articleId}
     </select>
     
-    <insert id="insertNewReplies"
-            parameterType="com.ktdsuniversity.edu.replies.vo.request.RegistRepliesVO">
-            
-        <selectKey order="BEFORE" keyProperty="registRepliesVO.id" resultType="string">
-            SELECT ('RE-'|| TO_CHAR(SYSDATE, 'YYYYMMDD-') || LPAD(SEQ_REPLIES_PK.NEXTVAL, 6, '0'))
+    <insert id="insertNewReply">
+        <selectKey order="BEFORE" keyProperty="registReplies.id" resultType="string">
+            SELECT 'RE-' || TO_CHAR(SYSDATE, 'YYYYMMDD-') || LPAD(SEQ_REPLIES_PK.NEXTVAL, 6, '0')
               FROM DUAL
-        </selectKey>        
-       INSERT INTO REPLIES 
-        (ID
-       , ARTICLE_ID
-       , EMAIL
-       , CONTENT
-       , CRT_DT
-       , FILE_SET_ID)
-       VALUES
-        (#{registRepliesVO.id}
-       , #{articleId}
-       , #{registRepliesVO.email}
-       , #{registRepliesVO.content}
-       , SYSDATE
-       , #{registRepliesVO.fileSetId})
+        </selectKey>
+        INSERT INTO REPLIES 
+         (ID
+        , ARTICLE_ID
+        , EMAIL
+        , CONTENT
+        , RECOMMEND_CNT
+        , DEL_YN
+        , CRT_DT
+        , MDFY_DT
+        , FILE_SET_ID)
+        VALUES
+         (#{registReplies.id}
+        , #{articleId} 
+        , #{registReplies.email}
+        , #{registReplies.content}
+        , 0 
+        , 'N' 
+        , SYSDATE
+        , NULL
+        , #{registReplies.fileSetId})
+        
     </insert>
     
+    <update id="updateReply">
+        UPDATE REPLIES
+           SET CONTENT = #{modifyReplies.content}
+             , MDFY_DT = SYSDATE
+             , FILE_SET_ID = #{modifyReplies.fileSetId}
+         WHERE ID = #{replyId}
+           AND ARTICLE_ID = #{articleId}
+           AND EMAIL = #{modifyReplies.email}
+           AND DEL_YN = 'N'
+    </update>
+    
+    <update id="deleteReplyByReplyId">
+        UPDATE REPLIES
+           SET DEL_YN = 'Y'
+             , MDFY_DT = SYSDATE
+         WHERE ID = #{replyId}
+           AND ARTICLE_ID = #{articleId}
+           AND DEL_YN = 'N'
+    </update>
+    
+    <update id="updateIncreaseRecommendCount">
+        UPDATE REPLIES
+           SET RECOMMEND_CNT = RECOMMEND_CNT + 1
+         WHERE ID = #{replyId}
+           AND ARTICLE_ID = #{articleId}
+           AND DEL_YN = 'N'
+    </update>
 </mapper>

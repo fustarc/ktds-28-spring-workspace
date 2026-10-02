@@ -30,8 +30,10 @@ mybatis:
 app:
   multipart:
     store-path: uploadFiles
-  
-  
+  encrypt:
+    aes:
+      key: abcde12345abcde12345abcde12345zz   
+
   
   
   

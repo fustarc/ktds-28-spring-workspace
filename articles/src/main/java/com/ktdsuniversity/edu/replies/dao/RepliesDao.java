@@ -12,16 +12,23 @@ import com.ktdsuniversity.edu.replies.vo.response.RepliesVO;
 @Mapper
 public interface RepliesDao {
 	
-	long selectRepliesCount();
+	long selectRepliesCount(String articleId);
 	
-	List<RepliesVO> selectAllReplies();
+	List<RepliesVO> selectAllReplies(String articleId);
 	
 	int insertNewReplies(@Param("articleId") String articleId, 
 						 @Param("registRepliesVO") RegistRepliesVO registRepliesVO);
 	
-	RepliesVO selectRepliesByReplieId(String articleId);
+	RepliesVO selectReplyByReplyId(@Param("articleId") String articleId,
+									@Param("replyId") String replyId);
 
-	int updateReplies(@Param("articleId") String articleId, 
-					  @Param("modifyRepliesVO") ModifyRepliesVO modifyRepliesVO);
+	int updateReply(@Param("articleId") String articleId,
+					@Param("replyId") String replyId,
+					@Param("modifyReplies") ModifyRepliesVO modifyRepliesVO);
 	
+	int deleteReplyByReplyId(@Param("articleId") String articleId, 
+			 				 @Param("replyId") String replyId);
+
+	int updateIncreaseRecommendCount(@Param("articleId") String articleId, 
+					 				 @Param("replyId") String replyId);
 }

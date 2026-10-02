@@ -9,7 +9,11 @@ public interface RepliesService {
 	
 	RepliesListVO readAllReplies(String articleId);
 
-	RepliesVO createNewReplies(String articleId, RegistRepliesVO registRepliesVO);
+	RepliesVO createNewReply(String articleId, RegistRepliesVO registRepliesVO);
 	
-	RepliesVO updateReplies(String articleId, ModifyRepliesVO modifyRepliesVO);
+	RepliesVO updateReply(String articleId, String replyId, ModifyRepliesVO modifyRepliesVO);
+	
+	String deleteReply(String articleId, String replyId);
+	
+	long recommendOneReply(String articleId, String replyId);
 }

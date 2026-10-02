@@ -15,6 +15,7 @@ import com.ktdsuniversity.edu.replies.vo.request.RegistRepliesVO;
 import com.ktdsuniversity.edu.replies.vo.response.RepliesListVO;
 import com.ktdsuniversity.edu.replies.vo.response.RepliesVO;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -42,7 +43,8 @@ public class RepliesController {
 			@Size(min=18, max=20, message="잘못된 값입니다.")
 			@PathVariable String articleId,
 			@Valid @ModelAttribute RegistRepliesVO registRepliesVO,
-			BindingResult validationResult) {
+			BindingResult validationResult,
+			HttpSession session) {
 				
 		System.out.println(validationResult);
 		
@@ -51,7 +53,7 @@ public class RepliesController {
 		}
 		
 		try {
-			RepliesVO result = this.repliesService.createNewReplies(articleId, registRepliesVO);
+			RepliesVO result = this.repliesService.createNewReply(articleId, registRepliesVO);
 			return ApiResponse.CREATE(result);
 		} catch (IllegalArgumentException iae){
 			return ApiResponse.FORBIDDEN(iae.getMessage());
@@ -60,14 +62,23 @@ public class RepliesController {
 	
 	// PUT /replies/{게시글아이디}/{댓글아이디}
 	// 게시글에 등록된 댓글을 수정 (파일 첨부 가능)
-	@PutMapping("/articles/{articleId}/repiles")
-	public ApiResponse<RepliesVO> updateReplies(
+	@PutMapping("/articles/{articleId}/repiles/{replyId}")
+	public ApiResponse<RepliesVO> updateReply(
 			@Size(min=18, max=20, message="잘못된 값입니다.")
 			@PathVariable String articleId,
+			@PathVariable String replyId,
 			@Valid @ModelAttribute ModifyRepliesVO modifyRepliesVO,
 			BindingResult validationResult) {
 		
-		return null;
+		if (validationResult.hasErrors()) {
+			return ApiResponse.BAD_REQUEST(validationResult.getFieldErrors());
+		}
+		
+		try {
+			return ApiResponse.OK(this.repliesService.updateReply(articleId, replyId, modifyRepliesVO));
+		} catch (IllegalArgumentException iae) {
+			return ApiResponse.FORBIDDEN(iae.getMessage());
+		}
 	}
 	
 	// DELETE /replies/{게시글아이디}/{댓글아이디}
